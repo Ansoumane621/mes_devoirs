@@ -13,15 +13,9 @@ if(isset($_POST['btn']) ){
     $quantite=htmlspecialchars(strip_tags($_POST['quantite']));
     $code=htmlspecialchars(strip_tags($_POST['code']));
     $prix=htmlspecialchars(strip_tags($_POST['prix']));
-    //le try en cas de doublons de la clé ont evite les erreurs 
-    try{
-        $req=("SELECT * FROM produit ");
-        $requet=$con->prepare($req);
-        $requet->execute();
-        foreach($requet as $re){
-            if($re['code']===$code)
-            {$message="ce code est déja dans la base veuillez le changer";}
-            else{
+    //le try en cas de doublons de la clé ont evite les erreurs
+ 
+     
                      if(empty($_POST['designation'])){
                              $errordesig="veuilles remplier ce champ";
                     }
@@ -34,24 +28,22 @@ if(isset($_POST['btn']) ){
                     if(empty($_POST['prix'])){
                             $errorprix="veuilles remplier ce champ";
                         }
+                    
                     else{
-           
-                            $requet=("INSERT INTO `produit`(code,designation,quatite,prix)
-                            VALUES(?,?,?,?)");
-                            $requete=$con->prepare($requet);
-                            $requete->execute(array($code,$desig,$quantite,$prix));
-             
-                         } 
-            }
-        }
-    }catch(PDOException $error){
-      $t=die("veuilez changer le code  de se produit car il existe déja dans la  base de  donnée: ");
-      header('Location: index.php');
-    }
-    
-   
+                        try{
+                        $requet=("INSERT INTO `produit`(code,designation,quatite,prix)
+                        VALUES(?,?,?,?)");
+                        $requete=$con->prepare($requet);
+                        $requete->execute(array($code,$desig,$quantite,$prix));
+                    }catch(PDOException $e) {
+                        $t="echec risque de doublons";
+                        
+                    } 
+                      
+                         }  
+                       
 }
-//on récupére ici id sur laquelle ont n'as cliquez ou pouvoir supprimer un produit
+//on récupére ici id sur laquelle ont n'as cliquez pour pouvoir supprimer un produit
 if(isset($_GET['id1'])){
     $id=$_GET['id1'];
     $req=("SELECT * FROM produit WHERE code=?");
@@ -122,17 +114,10 @@ if(isset($_POST['btn_mod']) ){
     </style>
 </head>
 <body>
-    <header>
-        <nav>
-            <span>menu</span>
-            <ul>
-                <li><a href="#">deconnexion</a> </li>
-
-            </ul>
-        </nav>
-    </header>
+    <?php require_once './file/header.php';?>
     <!--notre section qui renfermer tous le contenue des actions effectuer dans la base de donné-->
     <section>
+        
     <div class="formulaire">
         <h1>bienvenue sur la page d'enregistrement des articles</h1>
         <!--notre formulaire d'enregistrement des articles-->
@@ -142,7 +127,8 @@ if(isset($_POST['btn_mod']) ){
             <div>
                 <label for="code">code</label>
                 <input type="text" name="code"><br/>
-                <span style="color:red"><?php echo $errorcode .' '. $message ?></span>
+               
+                <span style="color:red"><?php echo $errorcode .' '. $message. $t; ?></span>
             </div>
             <div>
                 <label for="designation">Designation</label>
